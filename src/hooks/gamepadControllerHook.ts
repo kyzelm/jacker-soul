@@ -26,10 +26,10 @@ export function useGamepadController(): void {
     }
   }, [buttonDownHandler, buttonUpHandler]);
 
-  const stickHandler = useCallback((index: number, values: StickValues) => {
-    if (index === 0) {
+  const stickHandler = useCallback((side: 0 | 1, values: StickValues) => {
+    if (side === 0) {
       dispatch(GamepadActions.setLeftAxis(values));
-    } else if (index === 1) {
+    } else if (side === 1) {
       dispatch(GamepadActions.setRightAxis(values));
     }
   }, [dispatch]);
@@ -65,7 +65,7 @@ export function useGamepadController(): void {
         prevGamepads.filter((g) => g.index !== gamepad.index)
       );
     });
-  }, [stickHandler, triggerHandler])
+  }, [buttonDownHandler, buttonUpHandler, stickHandler, triggerHandler])
 
   useEffect(() => {
     if (gamepads.length > 1) {

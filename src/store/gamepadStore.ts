@@ -11,13 +11,13 @@ export enum DualShockTrigger {
 interface GamepadStoreProps {
   isConnected: boolean;
   buttonsDown: ButtonsGroup[],
-  axis: StickValues[],
+  axis: [StickValues, StickValues],
 }
 
 const initialState: GamepadStoreProps = {
   isConnected: false,
   buttonsDown: [],
-  axis: [],
+  axis: [{x: 0, y: 0}, {x: 0, y: 0}],
 }
 
 const gamepadSlice = createSlice({
@@ -36,15 +36,20 @@ const gamepadSlice = createSlice({
       state.buttonsDown = state.buttonsDown.filter(button => button !== action.payload);
     },
     setLeftAxis: (state, action: PayloadAction<StickValues>) => {
-      state.axis[0] = action.payload;
+      state.axis[0].x = Math.abs(action.payload.x) > 0.3 ? action.payload.x : 0;
+      state.axis[0].y = Math.abs(action.payload.y) > 0.3 ? action.payload.y : 0;
     },
     setRightAxis: (state, action: PayloadAction<StickValues>) => {
-      state.axis[1] = action.payload;
+      state.axis[1].x = Math.abs(action.payload.x) > 0.3 ? action.payload.x : 0;
+      state.axis[1].y = Math.abs(action.payload.y) > 0.3 ? action.payload.y : 0;
     },
     clearData: (state) => {
       state.isConnected = false;
       state.buttonsDown = [];
-      state.axis = [];
+      state.axis[0].x = 0;
+      state.axis[0].y = 0;
+      state.axis[1].x = 0;
+      state.axis[1].y = 0;
     }
   },
 });
