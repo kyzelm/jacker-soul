@@ -1,8 +1,13 @@
 import './App.css'
+import {useAppSelector} from "./store/store.ts";
 import {useGamepadController} from "./hooks/gamepadControllerHook.ts";
 
 function App() {
-  const [isGamepadConnected, buttonsPressed, axis] = useGamepadController()
+  useGamepadController()
+
+  const isGamepadConnected = useAppSelector(state => state.gamepad.isConnected)
+  const buttonsDown = useAppSelector(state => state.gamepad.buttonsDown)
+  const axis = useAppSelector(state => state.gamepad.axis)
 
   return (
     <>
@@ -14,7 +19,7 @@ function App() {
           <p>No gamepad connected.</p>
         )}
         <h2>Buttons Pressed</h2>
-        {buttonsPressed}
+        {buttonsDown}
         <h2>Axis Values</h2>
         {axis.map((stick, index) => (
           <div key={index}>

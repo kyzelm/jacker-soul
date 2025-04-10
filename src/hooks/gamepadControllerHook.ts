@@ -1,30 +1,22 @@
 import {useCallback, useEffect, useRef, useState} from "react";
-import {DualShockButton, DualShockDpad, DualShockPad, Gamepad, GamepadManager, StickValues} from "@babylonjs/core";
+import {DualShockPad, Gamepad, GamepadManager, StickValues} from "@babylonjs/core";
+import {ButtonsGroup, DualShockTrigger, GamepadActions} from "../store/gamepadStore.ts";
+import {useAppDispatch} from "../store/store.ts";
 
-export enum DualShockTrigger {
-  L1 = 16,
-  R1 = 17,
-}
 
-export function useGamepadController(): [boolean, (DualShockButton | DualShockDpad | DualShockTrigger)[], StickValues[]] {
+export function useGamepadController(): void {
   const [gamepads, setGamepads] = useState<Gamepad[]>([]);
-  const [isGamepadConnected, setIsGamepadConnected] = useState<boolean>(false);
-  const [buttonsDown, setButtonsDown] = useState<(DualShockButton | DualShockDpad | DualShockTrigger)[]>([]);
-  const [axis, setAxis] = useState<StickValues[]>([]);
+  const dispatch = useAppDispatch();
 
   const gamepadManager = useRef<GamepadManager>(new GamepadManager());
 
-  function buttonDownHandler(button: DualShockButton | DualShockDpad | DualShockTrigger) {
-    console.log("Button pressed:", button);
-    setButtonsDown((prevButtons) => prevButtons.includes(button) ? prevButtons : [...prevButtons, button]);
-  }
+  const buttonDownHandler = useCallback((button: ButtonsGroup) => {
+    dispatch(GamepadActions.addButtonDown(button));
+  }, [dispatch]);
 
-  function buttonUpHandler(button: DualShockButton | DualShockDpad | DualShockTrigger) {
-    console.log("Button released:", button);
-    setButtonsDown((prevButtons) =>
-      prevButtons.filter((b) => b !== button)
-    );
-  }
+  const buttonUpHandler = useCallback((button: ButtonsGroup) => {
+    dispatch(GamepadActions.removeButtonDown(button));
+  }, [dispatch]);
 
   const triggerHandler = useCallback((trigger: DualShockTrigger, value: number) => {
     if (value > 0) {
@@ -32,15 +24,15 @@ export function useGamepadController(): [boolean, (DualShockButton | DualShockDp
     } else {
       buttonUpHandler(trigger);
     }
-  }, []);
+  }, [buttonDownHandler, buttonUpHandler]);
 
   const stickHandler = useCallback((index: number, values: StickValues) => {
-    setAxis((prevAxis) => {
-      const newAxis = [...prevAxis];
-      newAxis[index] = values;
-      return newAxis;
-    });
-  }, []);
+    if (index === 0) {
+      dispatch(GamepadActions.setLeftAxis(values));
+    } else if (index === 1) {
+      dispatch(GamepadActions.setRightAxis(values));
+    }
+  }, [dispatch]);
 
   useEffect(() => {
     gamepadManager.current.onGamepadConnectedObservable.add((gamepad) => {
@@ -76,11 +68,10 @@ export function useGamepadController(): [boolean, (DualShockButton | DualShockDp
   }, [stickHandler, triggerHandler])
 
   useEffect(() => {
-    setIsGamepadConnected(gamepads.length > 0);
-    if (!isGamepadConnected) {
-      setButtonsDown([])
+    if (gamepads.length > 1) {
+      dispatch(GamepadActions.setGamepadConnected(true));
+    } else {
+      dispatch(GamepadActions.clearData());
     }
-  }, [gamepads.length, isGamepadConnected]);
-
-  return [isGamepadConnected, buttonsDown, axis];
+  }, [gamepads.length, dispatch]);
 }
