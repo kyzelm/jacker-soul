@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 import {DualShockPad, Gamepad, GamepadManager, StickValues} from "@babylonjs/core";
-import {ButtonsGroup, DualShockTrigger, GamepadActions} from "../store/gamepadStore.ts";
+import {ButtonsGroup, DualShockTrigger, GamepadActions} from "../store/gamepadSlice.ts";
 import {useAppDispatch} from "../store/store.ts";
 
 

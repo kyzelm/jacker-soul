@@ -1,10 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit'
 import {useDispatch, useSelector} from "react-redux";
-import {gamepadReducer} from "./gamepadStore.ts";
+import {gamepadReducer} from "./gamepadSlice.ts";
+import {menuReducer} from "./menuSlice.ts";
 
 export const store = configureStore({
   reducer: {
     gamepad: gamepadReducer,
+    menu: menuReducer,
   },
 })
 

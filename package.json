@@ -10,7 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@babylonjs/core": "^8.1.1",
+    "@babylonjs/core": "^8.2.0",
+    "@babylonjs/gui": "^8.2.0",
+    "@babylonjs/loaders": "^8.2.0",
     "@reduxjs/toolkit": "^2.6.1",
     "babylonjs-hook": "^0.1.1",
     "framer-motion": "^12.6.3",
