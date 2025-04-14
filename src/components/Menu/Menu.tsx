@@ -1,25 +1,18 @@
-import {JSX, useEffect} from 'react';
+import {JSX, useEffect, useState} from 'react';
 import {useAppDispatch, useAppSelector} from "../../store/store.ts";
 import {DualShockDpad} from "@babylonjs/core";
 import {MenuActions, MenuPages} from "../../store/menuSlice.ts";
-import {GamepadActions} from "../../store/gamepadSlice.ts";
+import {ButtonsGroup} from "../../store/gamepadSlice.ts";
 import styles from "./Menu.module.css";
+import MenuHome from "./MenuPages/MenuHome.tsx";
+import MenuNewGame from "./MenuPages/MenuNewGame.tsx";
+import {PlayerSave} from "../../store/playerSlice.ts";
+import {MenuLoadGame} from "./MenuPages/MenuLoadGame.tsx";
+import MenuControls from "./MenuPages/MenuControls.tsx";
 
-interface BaseMenuProps {
+export interface BaseMenuProps {
   cursor: number;
-}
-
-function MenuHome({cursor}: BaseMenuProps): JSX.Element {
-  return (
-    <>
-      <h1>Jacker Soul</h1>
-      <ul>
-        <li style={{scale: cursor === 0 ? "1.2" : "1"}}>New Game</li>
-        <li style={{scale: cursor === 1 ? "1.2" : "1"}}>Load Game</li>
-        <li style={{scale: cursor === 2 ? "1.2" : "1"}}>Controls</li>
-      </ul>
-    </>
-  );
+  buttonDown: ButtonsGroup;
 }
 
 function Menu(): JSX.Element {
@@ -27,15 +20,21 @@ function Menu(): JSX.Element {
   const buttonDown = useAppSelector(state => state.gamepad.buttonsDown)
   const cursor = useAppSelector(state => state.menu.cursor)
   const dispatch = useAppDispatch()
+  const [playerSaves, setPlayerSaves] = useState<PlayerSave[]>([])
 
   useEffect(() => {
-    if (buttonDown.includes(DualShockDpad.Up)) {
-      dispatch(MenuActions.cursorUp());
-      dispatch(GamepadActions.removeButtonDown(DualShockDpad.Up));
+    if (localStorage.getItem("saves") && playerSaves.length > 0) {
+      setPlayerSaves(JSON.parse(localStorage.getItem("saves") || "[]"));
+      console.log(playerSaves);
     }
-    if (buttonDown.includes(DualShockDpad.Down)) {
+  }, [playerSaves]);
+
+  useEffect(() => {
+    if (buttonDown === DualShockDpad.Up) {
+      dispatch(MenuActions.cursorUp());
+    }
+    if (buttonDown === DualShockDpad.Down) {
       dispatch(MenuActions.cursorDown());
-      dispatch(GamepadActions.removeButtonDown(DualShockDpad.Down));
     }
   }, [buttonDown, dispatch])
 
@@ -44,23 +43,41 @@ function Menu(): JSX.Element {
 
     switch (currentPage) {
       case MenuPages.HOME:
-        i = 4;
+        i = 2;
+        break;
+      case MenuPages.NEW_GAME:
+        i = 1;
+        break;
+      case MenuPages.LOAD_GAME:
+        i = playerSaves.length - 1;
+        break;
+      case MenuPages.CONTROLS:
+        i = 8;
         break;
     }
 
     if (cursor > i) {
       dispatch(MenuActions.setCursor(i));
     }
-  }, [currentPage, cursor, dispatch]);
+  }, [currentPage, cursor, dispatch, playerSaves.length]);
 
   return (
     <div className={styles.menu}>
       {((): JSX.Element => {
         switch (currentPage) {
+          case MenuPages.NONE:
+            return <></>;
           case MenuPages.HOME:
-            return <MenuHome cursor={cursor}/>;
+            return <MenuHome cursor={cursor} buttonDown={buttonDown}/>;
+          case MenuPages.NEW_GAME:
+            return <MenuNewGame cursor={cursor} buttonDown={buttonDown}/>
+          case MenuPages.LOAD_GAME:
+            return <MenuLoadGame cursor={cursor} buttonDown={buttonDown} playerSaves={playerSaves}/>
+          case MenuPages.CONTROLS:
+            return <MenuControls cursor={cursor} buttonDown={buttonDown}/>
           default:
-            return <h1>Page not found</h1>;
+            dispatch(MenuActions.setCurrentPage(MenuPages.HOME));
+            return <></>;
         }
       })()}
     </div>

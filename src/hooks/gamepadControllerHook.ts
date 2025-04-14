@@ -11,20 +11,14 @@ export function useGamepadController(): void {
   const gamepadManager = useRef<GamepadManager>(new GamepadManager());
 
   const buttonDownHandler = useCallback((button: ButtonsGroup) => {
-    dispatch(GamepadActions.addButtonDown(button));
-  }, [dispatch]);
-
-  const buttonUpHandler = useCallback((button: ButtonsGroup) => {
-    dispatch(GamepadActions.removeButtonDown(button));
+    dispatch(GamepadActions.setButtonDown(button));
   }, [dispatch]);
 
   const triggerHandler = useCallback((trigger: DualShockTrigger, value: number) => {
-    if (value > 0) {
+    if (value > 0.1) {
       buttonDownHandler(trigger);
-    } else {
-      buttonUpHandler(trigger);
     }
-  }, [buttonDownHandler, buttonUpHandler]);
+  }, [buttonDownHandler]);
 
   const stickHandler = useCallback((side: 0 | 1, values: StickValues) => {
     if (side === 0) {
@@ -42,13 +36,11 @@ export function useGamepadController(): void {
         console.log("DualShockPad connected:", gamepad);
         gamepad.onButtonDownObservable.add(buttonDownHandler);
         gamepad.onPadDownObservable.add(buttonDownHandler);
-        gamepad.onButtonUpObservable.add(buttonUpHandler);
-        gamepad.onPadUpObservable.add(buttonUpHandler);
         gamepad.onlefttriggerchanged((value) => {
-          triggerHandler(DualShockTrigger.L1, value);
+          triggerHandler(DualShockTrigger.L2, value);
         });
         gamepad.onrighttriggerchanged((value) => {
-          triggerHandler(DualShockTrigger.R1, value);
+          triggerHandler(DualShockTrigger.R2, value);
         })
         gamepad.onleftstickchanged((values) => {
           stickHandler(0, values);
@@ -65,7 +57,7 @@ export function useGamepadController(): void {
         prevGamepads.filter((g) => g.index !== gamepad.index)
       );
     });
-  }, [buttonDownHandler, buttonUpHandler, stickHandler, triggerHandler])
+  }, [buttonDownHandler, stickHandler, triggerHandler])
 
   useEffect(() => {
     if (gamepads.length > 1) {
