@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from "react";
-import {DualShockPad, Gamepad, GamepadManager, StickValues} from "@babylonjs/core";
-import {ButtonsGroup, DualShockTrigger, GamepadActions} from "../store/gamepadSlice.ts";
+import {Gamepad, GamepadManager, StickValues, Xbox360Pad} from "@babylonjs/core";
+import {ButtonsGroup, Xbox360Trigger, GamepadActions} from "../store/gamepadSlice.ts";
 import {useAppDispatch} from "../store/store.ts";
 
 
@@ -14,7 +14,7 @@ export function useGamepadController(): void {
     dispatch(GamepadActions.setButtonDown(button));
   }, [dispatch]);
 
-  const triggerHandler = useCallback((trigger: DualShockTrigger, value: number) => {
+  const triggerHandler = useCallback((trigger: Xbox360Trigger, value: number) => {
     if (value > 0.1) {
       buttonDownHandler(trigger);
     }
@@ -32,15 +32,15 @@ export function useGamepadController(): void {
     gamepadManager.current.onGamepadConnectedObservable.add((gamepad) => {
       setGamepads((prevGamepads) => [...prevGamepads, gamepad]);
 
-      if (gamepad instanceof DualShockPad) {
-        console.log("DualShockPad connected:", gamepad);
+      if (gamepad instanceof Xbox360Pad) {
+        console.log("XboxPad connected:", gamepad);
         gamepad.onButtonDownObservable.add(buttonDownHandler);
         gamepad.onPadDownObservable.add(buttonDownHandler);
         gamepad.onlefttriggerchanged((value) => {
-          triggerHandler(DualShockTrigger.L2, value);
+          triggerHandler(Xbox360Trigger.LT, value);
         });
         gamepad.onrighttriggerchanged((value) => {
-          triggerHandler(DualShockTrigger.R2, value);
+          triggerHandler(Xbox360Trigger.RT, value);
         })
         gamepad.onleftstickchanged((values) => {
           stickHandler(0, values);

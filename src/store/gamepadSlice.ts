@@ -1,11 +1,11 @@
-import {DualShockButton, DualShockDpad, StickValues} from "@babylonjs/core";
+import {StickValues, Xbox360Button, Xbox360Dpad} from "@babylonjs/core";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 
-export type ButtonsGroup = DualShockButton | DualShockDpad | DualShockTrigger | null;
+export type ButtonsGroup = Xbox360Button | Xbox360Dpad | Xbox360Trigger | null;
 
-export enum DualShockTrigger {
-  L2 = 16,
-  R2 = 17,
+export enum Xbox360Trigger {
+  LT = 16,
+  RT = 17,
 }
 
 export enum PlayerAction {
@@ -26,7 +26,7 @@ interface GamepadStoreProps {
   buttonsDown: ButtonsGroup,
   axis: [StickValues, StickValues],
   controls: {
-    [key in PlayerAction]: DualShockTrigger | DualShockButton
+    [key in PlayerAction]: Xbox360Trigger | Xbox360Button
   }
 }
 
@@ -36,15 +36,15 @@ const initialState: GamepadStoreProps = {
   buttonsDown: null,
   axis: [{x: 0, y: 0}, {x: 0, y: 0}],
   controls: {
-    "JUMP": DualShockButton.Cross,
-    "LIGHT_ATTACK": DualShockButton.R1,
-    "HEAVY_ATTACK": DualShockTrigger.R2,
-    "SPECIAL": DualShockButton.L1,
-    "ROLL": DualShockButton.Circle,
-    "RUN": DualShockButton.LeftStick,
-    "INTERACT": DualShockButton.Triangle,
-    "MENU": DualShockButton.Options,
-    "POTION": DualShockButton.Square,
+    "JUMP": Xbox360Button.A,
+    "LIGHT_ATTACK": Xbox360Button.RB,
+    "HEAVY_ATTACK": Xbox360Button.LB,
+    "SPECIAL": Xbox360Button.RightStick,
+    "ROLL": Xbox360Button.B,
+    "RUN": Xbox360Button.LeftStick,
+    "INTERACT": Xbox360Button.Y,
+    "MENU": Xbox360Button.Start,
+    "POTION": Xbox360Button.X,
   }
 }
 
@@ -66,7 +66,7 @@ const gamepadSlice = createSlice({
     },
     setControls: (state, action: PayloadAction<{
       action: PlayerAction,
-      button: DualShockButton | DualShockTrigger
+      button: Xbox360Button | Xbox360Trigger
     }>) => {
       const existingAction = Object.entries(state.controls).findIndex(([, value]) => value === action.payload.button);
       if (existingAction !== -1) {
@@ -79,12 +79,12 @@ const gamepadSlice = createSlice({
         state.controls = initialState.controls;
     },
     setLeftAxis: (state, action: PayloadAction<StickValues>) => {
-      state.axis[0].x = Math.abs(action.payload.x) > 0.3 ? action.payload.x : 0;
-      state.axis[0].y = Math.abs(action.payload.y) > 0.3 ? action.payload.y : 0;
+      state.axis[0].x = action.payload.x;
+      state.axis[0].y = action.payload.y;
     },
     setRightAxis: (state, action: PayloadAction<StickValues>) => {
-      state.axis[1].x = Math.abs(action.payload.x) > 0.3 ? action.payload.x : 0;
-      state.axis[1].y = Math.abs(action.payload.y) > 0.3 ? action.payload.y : 0;
+      state.axis[1].x = action.payload.x;
+      state.axis[1].y = action.payload.y;
     },
     clearData: (state) => {
       state.isConnected = false;
