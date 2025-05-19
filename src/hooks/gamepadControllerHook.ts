@@ -30,9 +30,9 @@ export function useGamepadController(): void {
 
   useEffect(() => {
     gamepadManager.current.onGamepadConnectedObservable.add((gamepad) => {
-      setGamepads((prevGamepads) => [...prevGamepads, gamepad]);
-
       if (gamepad instanceof Xbox360Pad) {
+        setGamepads((prevGamepads) => [...prevGamepads, gamepad]);
+
         console.log("XboxPad connected:", gamepad);
         gamepad.onButtonDownObservable.add(buttonDownHandler);
         gamepad.onPadDownObservable.add(buttonDownHandler);

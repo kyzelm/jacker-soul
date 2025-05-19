@@ -1,8 +1,8 @@
 import {JSX, useEffect, useState} from "react";
 import {BaseMenuProps} from "../Menu.tsx";
 import {useAppDispatch, useAppSelector} from "../../../store/store.ts";
-import {DualShockButton} from "@babylonjs/core";
-import {DualShockTrigger, GamepadActions, PlayerAction} from "../../../store/gamepadSlice.ts";
+import {Xbox360Button} from "@babylonjs/core";
+import {GamepadActions, PlayerAction} from "../../../store/gamepadSlice.ts";
 import {MenuActions, MenuPages} from "../../../store/menuSlice.ts";
 
 export default function MenuControls({cursor, buttonDown}: BaseMenuProps): JSX.Element {
@@ -17,41 +17,41 @@ export default function MenuControls({cursor, buttonDown}: BaseMenuProps): JSX.E
 
       switch (cursor) {
         case 0:
-          dispatch(GamepadActions.setControls({action: PlayerAction.JUMP, button: buttonDown as DualShockButton | DualShockTrigger}));
+          dispatch(GamepadActions.setControls({action: PlayerAction.JUMP, button: buttonDown as Xbox360Button}));
           break;
         case 1:
-          dispatch(GamepadActions.setControls({action: PlayerAction.LIGHT_ATTACK, button: buttonDown as DualShockButton | DualShockTrigger}));
+          dispatch(GamepadActions.setControls({action: PlayerAction.LIGHT_ATTACK, button: buttonDown as Xbox360Button}));
           break;
         case 2:
-          dispatch(GamepadActions.setControls({action: PlayerAction.HEAVY_ATTACK, button: buttonDown as DualShockButton | DualShockTrigger}));
+          dispatch(GamepadActions.setControls({action: PlayerAction.HEAVY_ATTACK, button: buttonDown as Xbox360Button}));
           break;
         case 3:
-          dispatch(GamepadActions.setControls({action: PlayerAction.SPECIAL, button: buttonDown as DualShockButton | DualShockTrigger}));
+          dispatch(GamepadActions.setControls({action: PlayerAction.SPECIAL, button: buttonDown as Xbox360Button}));
           break;
         case 4:
-          dispatch(GamepadActions.setControls({action: PlayerAction.ROLL, button: buttonDown as DualShockButton | DualShockTrigger}));
+          dispatch(GamepadActions.setControls({action: PlayerAction.ROLL, button: buttonDown as Xbox360Button}));
           break;
         case 5:
-          dispatch(GamepadActions.setControls({action: PlayerAction.RUN, button: buttonDown as DualShockButton | DualShockTrigger}));
+          dispatch(GamepadActions.setControls({action: PlayerAction.RUN, button: buttonDown as Xbox360Button}));
           break;
         case 6:
-          dispatch(GamepadActions.setControls({action: PlayerAction.INTERACT, button: buttonDown as DualShockButton | DualShockTrigger}));
+          dispatch(GamepadActions.setControls({action: PlayerAction.INTERACT, button: buttonDown as Xbox360Button}));
           break;
         case 7:
-          dispatch(GamepadActions.setControls({action: PlayerAction.MENU, button: buttonDown as DualShockButton | DualShockTrigger}));
+          dispatch(GamepadActions.setControls({action: PlayerAction.MENU, button: buttonDown as Xbox360Button}));
           break;
         case 8:
-          dispatch(GamepadActions.setControls({action: PlayerAction.POTION, button: buttonDown as DualShockButton | DualShockTrigger}));
+          dispatch(GamepadActions.setControls({action: PlayerAction.POTION, button: buttonDown as Xbox360Button}));
           break;
         default:
           break;
       }
     } else {
-      if (buttonDown === DualShockButton.Cross) {
+      if (buttonDown === Xbox360Button.A) {
         setIsChanging(true);
       }
 
-      if (buttonDown === DualShockButton.Circle) {
+      if (buttonDown === Xbox360Button.B) {
         dispatch(MenuActions.setCurrentPage(MenuPages.HOME));
       }
     }

@@ -1,6 +1,6 @@
 import {JSX, useEffect, useState} from "react";
 import {BaseMenuProps} from "../Menu.tsx";
-import {DualShockButton} from "@babylonjs/core";
+import {Xbox360Button} from "@babylonjs/core";
 import {useAppDispatch} from "../../../store/store.ts";
 import {MenuActions, MenuPages} from "../../../store/menuSlice.ts";
 import {GamepadActions} from "../../../store/gamepadSlice.ts";
@@ -23,30 +23,31 @@ export default function MenuNewGame({cursor, buttonDown}: BaseMenuProps): JSX.El
 
   useEffect(() => {
     switch (buttonDown) {
-      case DualShockButton.Square:
+      case Xbox360Button.X:
         setName(nameList[Math.floor(100 * Math.random()) % nameList.length]);
         break;
-      case DualShockButton.Cross:
+      case Xbox360Button.A:
         dispatch(PlayerActions.setPlayerStats({
           name: name,
           level: 1,
           date: new Date().toString(),
           type: cursor === 0 ? "fast" : "slow",
           spawn: 0,
+          runes: 0,
           equipped: {
-            weapon: cursor === 0 ? Weapons.DAGGER_OF_JACKER : Weapons.SWORD_OF_JACKER,
+            weapon: cursor === 0 ? Weapons.FIST_OF_JACKER : Weapons.SWORD_OF_JACKER,
             armor: Armors.JACKER_ARMOR,
             amulet: null
           },
           inventory: {
-            weapons: [cursor === 0 ? Weapons.DAGGER_OF_JACKER : Weapons.SWORD_OF_JACKER],
+            weapons: [cursor === 0 ? Weapons.FIST_OF_JACKER : Weapons.SWORD_OF_JACKER],
             armors: [Armors.JACKER_ARMOR],
             amulets: [],
           }
         }))
         dispatch(MenuActions.setCurrentPage(MenuPages.NONE));
         break;
-      case DualShockButton.Circle:
+      case Xbox360Button.B:
         dispatch(MenuActions.setCurrentPage(MenuPages.HOME));
         break;
     }

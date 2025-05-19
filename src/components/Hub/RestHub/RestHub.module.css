@@ -1,0 +1,11 @@
+.restModal {
+  position: fixed;
+  bottom: 10dvh;
+  left: 50%;
+  z-index: 90;
+  transform: translateX(-50%);
+  padding: 10px 30px;
+  background-color: #1c1c1c;
+  border-radius: 8px;
+  color: white;
+}

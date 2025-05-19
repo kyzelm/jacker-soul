@@ -1,7 +1,9 @@
 import {JSX, useEffect, useRef} from "react";
 import {
+  ActionManager,
   Color3,
   Engine,
+  ExecuteCodeAction,
   FollowCamera,
   HavokPlugin,
   ImportMeshAsync,
@@ -21,6 +23,8 @@ import HavokPhysics from "@babylonjs/havok";
 import styles from "./GameEngine.module.css"
 import {useAppDispatch, useAppSelector} from "../../store/store.ts";
 import {GamepadActions} from "../../store/gamepadSlice.ts";
+import {MenuPages} from "../../store/menuSlice.ts";
+import {HubActions} from "../../store/hubSlice.ts";
 
 enum PlayerAnimation {
   HEAVY_ATTACK = 0,
@@ -62,6 +66,11 @@ export default function GameEngine(): JSX.Element {
 
   const dispatch = useAppDispatch();
 
+  const menuPage = useAppSelector(state => state.menu.currentPage)
+  const menuPageRef = useRef(MenuPages.HOME);
+
+  const playerState = useAppSelector(state => state.player.playerStats);
+
   const buttonDown = useAppSelector(state => state.gamepad.buttonsDown)
   const constrols = useAppSelector(state => state.gamepad.controls)
 
@@ -82,6 +91,12 @@ export default function GameEngine(): JSX.Element {
   }
 
   useEffect(() => {
+    menuPageRef.current = menuPage;
+  }, [menuPage]);
+
+  useEffect(() => {
+    if (menuPageRef.current !== MenuPages.NONE) return;
+
     if (buttonDown === constrols.ROLL && !isAnimationPlaying()) {
       stopAnimation();
       playerRef.current.playerModel!.animationGroups[PlayerAnimation.ROLL].start(false);
@@ -95,7 +110,7 @@ export default function GameEngine(): JSX.Element {
       playerRef.current.state = PlayerState.JUMPING;
     }
 
-    if (buttonDown === constrols.RUN && !isAnimationPlaying()) {
+    if (buttonDown === constrols.RUN && !isAnimationPlaying() && playerRef.current.state !== PlayerState.RUNNING) {
       stopAnimation();
       playerRef.current.playerModel!.animationGroups[PlayerAnimation.RUN].start(true);
       playerRef.current.state = PlayerState.RUNNING;
@@ -103,25 +118,29 @@ export default function GameEngine(): JSX.Element {
 
     if (buttonDown === constrols.LIGHT_ATTACK && !isAnimationPlaying()) {
       stopAnimation();
-      playerRef.current.playerModel!.animationGroups[PlayerAnimation.LIGHT_ATTACK].start(false, 1.5);
+      playerRef.current.playerModel!.animationGroups[PlayerAnimation.LIGHT_ATTACK].start(false, playerState.type === "fast" ? 1.5 : 1.0);
       playerRef.current.state = PlayerState.LIGHT_ATTACK;
     }
 
     if (buttonDown === constrols.HEAVY_ATTACK && !isAnimationPlaying()) {
       stopAnimation();
-      playerRef.current.playerModel!.animationGroups[PlayerAnimation.HEAVY_ATTACK].start(false, 1.5);
+      playerRef.current.playerModel!.animationGroups[PlayerAnimation.HEAVY_ATTACK].start(false, playerState.type === "fast" ? 1.5 : 1.0);
       playerRef.current.state = PlayerState.HEAVY_ATTACK;
     }
 
     dispatch(GamepadActions.buttonExecuted());
-  }, [buttonDown, constrols.HEAVY_ATTACK, constrols.JUMP, constrols.LIGHT_ATTACK, constrols.ROLL, constrols.RUN, dispatch]);
+  }, [buttonDown, constrols.HEAVY_ATTACK, constrols.JUMP, constrols.LIGHT_ATTACK, constrols.ROLL, constrols.RUN, dispatch, playerState.type]);
 
   useEffect(() => {
+    if (menuPageRef.current !== MenuPages.NONE) return;
+
     leftAxisRef.current[0] = leftAxis.x
     leftAxisRef.current[1] = leftAxis.y
   }, [leftAxis]);
 
   useEffect(() => {
+    if (menuPageRef.current !== MenuPages.NONE) return;
+
     rightAxisRef.current[0] = rightAxis.x
     rightAxisRef.current[1] = rightAxis.y
   }, [rightAxis]);
@@ -155,6 +174,14 @@ export default function GameEngine(): JSX.Element {
 
         shadowGenerators.push(new ShadowGenerator(1024, light));
       }
+      if (mesh.name.startsWith("Crystal")) {
+        const light = new PointLight(mesh.name, mesh.position, scene);
+        light.intensity = 0.5;
+        light.diffuse = new Color3(0, 200, 200);
+        light.specular = new Color3(0, 200, 200);
+
+        shadowGenerators.push(new ShadowGenerator(1024, light));
+      }
     });
 
     const playerHitbox = MeshBuilder.CreateCapsule("player", {
@@ -164,9 +191,9 @@ export default function GameEngine(): JSX.Element {
     playerHitbox.visibility = 0;
     camera.lockedTarget = playerHitbox;
 
-    const playerModel = await ImportMeshAsync("/models/playerL.glb", scene);
+    const playerModel = await ImportMeshAsync( `/models/player${playerState.type === "fast" ? "L" : "H"}.glb`, scene);
     playerModel.meshes[0].parent = playerHitbox;
-    playerModel.meshes[0].position.y = -0.9;
+    playerModel.meshes[0].position.y = -0.95;
     playerModel.animationGroups[0].stop();
     playerModel.animationGroups[PlayerAnimation.IDLE].start(true);
     shadowGenerators.forEach(shadowGenerator => {
@@ -190,12 +217,60 @@ export default function GameEngine(): JSX.Element {
           restitution: 0,
         }, scene);
       }
+      if (mesh.name.startsWith("Fog")) {
+        mesh.visibility = 0;
+        mesh.isPickable = false;
+        mesh.checkCollisions = false;
+        mesh.actionManager = new ActionManager(scene);
+        mesh.actionManager.registerAction(
+          new ExecuteCodeAction({
+            trigger: ActionManager.OnIntersectionExitTrigger,
+            parameter: playerHitbox,
+          }, () => {
+            if (playerHitbox.position.z < mesh.position.z) {
+              mesh.visibility = 1;
+              new PhysicsAggregate(mesh, PhysicsShapeType.BOX, {
+                mass: 0,
+                restitution: 0,
+              }, scene);
+            }
+          })
+        )
+      }
+      if (mesh.name.startsWith("Crystal")) {
+        const detector = MeshBuilder.CreateSphere("detector", {
+          diameter: 20,
+          segments: 4,
+        })
+        detector.parent = mesh;
+        detector.isPickable = false;
+        detector.checkCollisions = true;
+        detector.isVisible = false;
+        detector.actionManager = new ActionManager(scene);
+        detector.actionManager.registerAction(
+          new ExecuteCodeAction({
+            trigger: ActionManager.OnIntersectionEnterTrigger,
+            parameter: playerHitbox,
+          }, () => {
+            dispatch(HubActions.openRestHub(parseFloat(mesh.name.split("-")[1])));
+          })
+        )
+        detector.actionManager.registerAction(
+          new ExecuteCodeAction({
+            trigger: ActionManager.OnIntersectionExitTrigger,
+            parameter: playerHitbox,
+          }, () => {
+            dispatch(HubActions.closeRestHub());
+          })
+        )
+      }
     })
 
     const playerController = new PhysicsCharacterController(new Vector3(0, 5, 0), {
       capsuleHeight: 1.7,
       capsuleRadius: 0.4,
     }, scene);
+    playerController.setPosition(map.meshes!.find((mesh) => mesh.name.startsWith("Crystal") && parseFloat(mesh.name.split("-")[1]) === playerState.spawn)!.getAbsolutePosition().add(new Vector3(0, 0.55, 0)));
 
     cameraRef.current = camera;
     playerRef.current.playerController = playerController;
@@ -236,6 +311,7 @@ export default function GameEngine(): JSX.Element {
 
   const onRender = (scene: Scene) => {
     if (!playerRef.current.playerController || !playerRef.current.playerHitbox || !cameraRef.current) return;
+    if (menuPageRef.current !== MenuPages.NONE) return;
 
     cameraRef.current.rotationOffset += rightAxisRef.current[0] * 3;
     if (cameraRef.current.rotationOffset > 360) {
@@ -288,7 +364,10 @@ export default function GameEngine(): JSX.Element {
       stencil: true,
     })
 
+    engine.displayLoadingUI();
+
     SceneSetup(engine).then((scene) => {
+      engine.hideLoadingUI()
       engine.runRenderLoop(() => {
         if (scene) {
           onRender(scene);

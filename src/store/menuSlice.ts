@@ -15,7 +15,7 @@ interface MenuSliceProps {
 
 const initialState: MenuSliceProps = {
   cursor: 0,
-  currentPage: MenuPages.HOME,
+  currentPage: MenuPages.HOME
 }
 
 const menuSlice = createSlice({

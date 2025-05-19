@@ -19,6 +19,7 @@ export interface PlayerSave {
   },
   type: PlayerType,
   level: number;
+  runes: number;
 }
 
 interface PlayerSliceProps {
@@ -42,6 +43,7 @@ const initialState: PlayerSliceProps = {
     },
     type: "fast",
     level: 1,
+    runes: 0,
   }
 }
 

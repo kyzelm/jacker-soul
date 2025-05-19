@@ -1,6 +1,6 @@
 import {JSX, useEffect} from "react";
 import {useAppDispatch} from "../../../store/store.ts";
-import {DualShockButton} from "@babylonjs/core";
+import {Xbox360Button} from "@babylonjs/core";
 import {MenuActions, MenuPages} from "../../../store/menuSlice.ts";
 import {BaseMenuProps} from "../Menu.tsx";
 import {GamepadActions} from "../../../store/gamepadSlice.ts";
@@ -9,7 +9,7 @@ export default function MenuHome({cursor, buttonDown}: BaseMenuProps): JSX.Eleme
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (buttonDown == DualShockButton.Cross) {
+    if (buttonDown == Xbox360Button.A) {
       switch (cursor) {
         case 0:
           dispatch(MenuActions.setCurrentPage(MenuPages.NEW_GAME));

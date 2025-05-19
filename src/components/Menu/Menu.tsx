@@ -1,6 +1,6 @@
 import {JSX, useEffect, useState} from 'react';
 import {useAppDispatch, useAppSelector} from "../../store/store.ts";
-import {DualShockDpad} from "@babylonjs/core";
+import {Xbox360Dpad} from "@babylonjs/core";
 import {MenuActions, MenuPages} from "../../store/menuSlice.ts";
 import {ButtonsGroup} from "../../store/gamepadSlice.ts";
 import styles from "./Menu.module.css";
@@ -23,17 +23,16 @@ function Menu(): JSX.Element {
   const [playerSaves, setPlayerSaves] = useState<PlayerSave[]>([])
 
   useEffect(() => {
-    if (localStorage.getItem("saves") && playerSaves.length > 0) {
+    if (playerSaves.length === 0) {
       setPlayerSaves(JSON.parse(localStorage.getItem("saves") || "[]"));
-      console.log(playerSaves);
     }
   }, [playerSaves]);
 
   useEffect(() => {
-    if (buttonDown === DualShockDpad.Up) {
+    if (buttonDown === Xbox360Dpad.Up) {
       dispatch(MenuActions.cursorUp());
     }
-    if (buttonDown === DualShockDpad.Down) {
+    if (buttonDown === Xbox360Dpad.Down) {
       dispatch(MenuActions.cursorDown());
     }
   }, [buttonDown, dispatch])

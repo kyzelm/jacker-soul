@@ -1,6 +1,6 @@
 export enum Weapons {
   SWORD_OF_JACKER = "Sword of Jacker",
-  DAGGER_OF_JACKER = "Dagger of Jacker",
+  FIST_OF_JACKER = "Fist of Jacker",
   ASY_SWORD = "Assassin's Sword",
   ASY_DAGGER = "Assassin's Dagger",
 }
@@ -15,7 +15,7 @@ export const WeaponsStats: {
     damage: 10,
     type: "slow",
   },
-  [Weapons.DAGGER_OF_JACKER]: {
+  [Weapons.FIST_OF_JACKER]: {
     damage: 5,
     type: "fast",
   },
