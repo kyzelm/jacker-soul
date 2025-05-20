@@ -85,12 +85,18 @@ const playerSlice = createSlice({
       }
     },
     setPlayerStats: (state, action: PayloadAction<PlayerSave>) => {
-      state.playerStats = action.payload;
       state.tmpStats.maxHealth = PlayerBaseStats[state.playerStats.type].health + AmuletsStats[state.playerStats.equipped.amulet].health + 50 * (state.playerStats.level - 1)
       state.tmpStats.health = state.tmpStats.maxHealth;
       state.tmpStats.defense = PlayerBaseStats[state.playerStats.type].defense + ArmorsStats[state.playerStats.equipped.armor].defense + 5 * (state.playerStats.level - 1);
       state.tmpStats.damage = PlayerBaseStats[state.playerStats.type].damage + WeaponsStats[state.playerStats.equipped.weapon].damage + 10 * (state.playerStats.level - 1);
       state.tmpStats.flasks = 3;
+    },
+    takeDamage: (state, action: PayloadAction<number>) => {
+      if (state.tmpStats.health - action.payload <= 0) {
+        state.tmpStats.health = 0;
+      } else {
+        state.tmpStats.health -= action.payload;
+      }
     },
     setSpawn: (state, action: PayloadAction<number>) => {
       state.playerStats.spawn = action.payload;

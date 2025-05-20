@@ -94,7 +94,7 @@ export default function GameEngine(): JSX.Element {
     dmg: number,
   }>({
     hp: 500,
-    dmg: 70,
+    dmg: 40,
   });
 
   const dispatch = useAppDispatch();
@@ -107,6 +107,7 @@ export default function GameEngine(): JSX.Element {
 
   const playerState = useAppSelector(state => state.player.playerStats);
   const tmpStats = useAppSelector(state => state.player.tmpStats);
+  const tmpStatsRef = useRef({...tmpStats});
 
   const buttonDown = useAppSelector(state => state.gamepad.buttonsDown)
   const constrols = useAppSelector(state => state.gamepad.controls)
@@ -197,6 +198,16 @@ export default function GameEngine(): JSX.Element {
     rightAxisRef.current[1] = rightAxis.y
   }, [rightAxis]);
 
+  useEffect(() => {
+    if (tmpStats.health <= 0) {
+      dispatch(MenuActions.setCurrentPage(MenuPages.HOME));
+    }
+  }, [dispatch, tmpStats.health]);
+
+  useEffect(() => {
+    tmpStatsRef.current = {...tmpStats};
+  }, [tmpStats]);
+
   async function SceneSetup(engine: Engine): Promise<Scene> {
     const scene = new Scene(engine);
 
@@ -249,7 +260,7 @@ export default function GameEngine(): JSX.Element {
         mesh.checkCollisions = false;
         enemiesRef.current.push({
           hp: 50,
-          dmg: 10,
+          dmg: 20,
         });
       }
       if (mesh.name.startsWith("Boss")) {
@@ -264,7 +275,7 @@ export default function GameEngine(): JSX.Element {
         height: 2,
         radius: 0.4,
       })
-      enemiesRef.current[i].enemyHitbox!.visibility = 0.4;
+      enemiesRef.current[i].enemyHitbox!.visibility = 0;
       enemiesRef.current[i].enemyModel = await ImportMeshAsync("/models/enemy.glb", scene);
       enemiesRef.current[i].enemyModel!.meshes[0].parent = enemiesRef.current[i].enemyHitbox!;
       enemiesRef.current[i].enemyModel!.meshes[0].position.y = -1;
@@ -281,7 +292,7 @@ export default function GameEngine(): JSX.Element {
       height: 1.7,
       radius: 0.4,
     })
-    bossRef.current.bossHitbox.visibility = 0.4;
+    bossRef.current.bossHitbox.visibility = 0;
     bossRef.current.bossModel = await ImportMeshAsync("/models/boss.glb", scene);
     bossRef.current.bossModel!.meshes[0].parent = bossRef.current.bossHitbox!;
     bossRef.current.bossModel!.meshes[0].position.y = -1;
@@ -416,6 +427,73 @@ export default function GameEngine(): JSX.Element {
       }
     })
 
+    enemiesRef.current.forEach((enemy) => {
+      enemy.enemyModel!.meshes.find(mesh => mesh.name === "Sword")!.actionManager = new ActionManager();
+      enemy.enemyModel!.meshes.find(mesh => mesh.name === "Sword")!.actionManager!.registerAction(
+        new ExecuteCodeAction({
+          trigger: ActionManager.OnIntersectionEnterTrigger,
+          parameter: playerHitbox,
+        }, () => {
+          if (enemy.enemyModel!.animationGroups[EnemyAnimation.ATTACK].isPlaying && !playerRef.current.playerModel!.animationGroups[PlayerAnimation.ROLL].isPlaying) {
+            dispatch(PlayerActions.takeDamage(enemy.dmg));
+          }
+        })
+      )
+    })
+
+    bossRef.current.bossModel.meshes.find(mesh => mesh.name === "Sword")!.actionManager = new ActionManager();
+    bossRef.current.bossModel.meshes.find(mesh => mesh.name === "Sword")!.actionManager!.registerAction(
+      new ExecuteCodeAction({
+        trigger: ActionManager.OnIntersectionEnterTrigger,
+        parameter: playerHitbox,
+      }, () => {
+        if ((bossRef.current.bossModel!.animationGroups[BossAnimation.ATTACK1].isPlaying || bossRef.current.bossModel!.animationGroups[BossAnimation.ATTACK2].isPlaying || bossRef.current.bossModel!.animationGroups[BossAnimation.ATTACK3].isPlaying) && !playerRef.current.playerModel!.animationGroups[PlayerAnimation.ROLL].isPlaying) {
+          dispatch(PlayerActions.takeDamage(bossRef.current.dmg));
+        }
+      })
+    )
+
+    playerModel.meshes.find(mesh => mesh.name === "Sword")!.actionManager = new ActionManager();
+    playerModel.meshes.find(mesh => mesh.name === "Sword")!.actionManager!.registerAction(
+      new ExecuteCodeAction({
+        trigger: ActionManager.OnIntersectionEnterTrigger,
+        parameter: bossRef.current.bossHitbox,
+      }, () => {
+        if (playerRef.current.playerModel!.animationGroups[PlayerAnimation.HEAVY_ATTACK].isPlaying || playerRef.current.playerModel!.animationGroups[PlayerAnimation.LIGHT_ATTACK].isPlaying) {
+          bossRef.current.hp -= playerRef.current.playerModel!.animationGroups[PlayerAnimation.HEAVY_ATTACK].isPlaying ? tmpStatsRef.current.damage * 2 : tmpStatsRef.current.damage;
+          if (bossRef.current.hp <= 0) {
+            mapRef.current!.meshes.find((e) => e.name.startsWith("Boss"))!.dispose();
+          }
+        }
+      })
+    )
+    playerModel.meshes.find(mesh => mesh.name === "Sword")!.actionManager!.registerAction(
+      new ExecuteCodeAction({
+        trigger: ActionManager.OnIntersectionEnterTrigger,
+        parameter: enemiesRef.current[0].enemyHitbox,
+      }, () => {
+        if (playerRef.current.playerModel!.animationGroups[PlayerAnimation.HEAVY_ATTACK].isPlaying || playerRef.current.playerModel!.animationGroups[PlayerAnimation.LIGHT_ATTACK].isPlaying) {
+          enemiesRef.current[0].hp -= playerRef.current.playerModel!.animationGroups[PlayerAnimation.HEAVY_ATTACK].isPlaying ? tmpStatsRef.current.damage * 2 : tmpStatsRef.current.damage;
+          if (enemiesRef.current[0].hp <= 0) {
+            mapRef.current!.meshes.find((e) => e.name.startsWith("Enemy"))!.dispose();
+          }
+        }
+      })
+    )
+    playerModel.meshes.find(mesh => mesh.name === "Sword")!.actionManager!.registerAction(
+      new ExecuteCodeAction({
+        trigger: ActionManager.OnIntersectionEnterTrigger,
+        parameter: enemiesRef.current[1].enemyHitbox,
+      }, () => {
+        if (playerRef.current.playerModel!.animationGroups[PlayerAnimation.HEAVY_ATTACK].isPlaying || playerRef.current.playerModel!.animationGroups[PlayerAnimation.LIGHT_ATTACK].isPlaying) {
+          enemiesRef.current[1].hp -= playerRef.current.playerModel!.animationGroups[PlayerAnimation.HEAVY_ATTACK].isPlaying ? tmpStatsRef.current.damage * 2 : tmpStatsRef.current.damage;
+          if (enemiesRef.current[1].hp <= 0) {
+            mapRef.current!.meshes.find((e) => e.name.startsWith("Enemy"))!.dispose();
+          }
+        }
+      })
+    )
+
     const playerController = new PhysicsCharacterController(new Vector3(0, 1, 0), {
       capsuleHeight: 1.7,
       capsuleRadius: 0.4,
@@ -460,8 +538,6 @@ export default function GameEngine(): JSX.Element {
   }
 
   const onRender = (scene: Scene) => {
-    if (tmpStats.health <= 0) dispatch(MenuActions.setCurrentPage(MenuPages.HOME));
-
     if (!playerRef.current.playerController || !playerRef.current.playerHitbox || !cameraRef.current) return;
     if (menuPageRef.current !== MenuPages.NONE) return;
 
