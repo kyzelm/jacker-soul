@@ -8,6 +8,7 @@ import {MenuPages} from "./store/menuSlice.ts";
 import RestHub from "./components/Hub/SmallHub/RestHub.tsx";
 import PickItemHub from "./components/Hub/SmallHub/PickItemHub.tsx";
 import MainHub from "./components/Hub/MainHub/MainHub.tsx";
+import PermaHub from "./components/Hub/PermaHub/PermaHub.tsx";
 
 function App() {
   const isControllerConnected = useAppSelector(state => state.gamepad.isConnected)
@@ -25,7 +26,10 @@ function App() {
       {isEqHub && <MainHub/>}
       {isRestHub && <RestHub/>}
       {isPickHub && <PickItemHub/>}
-      {currentPage == MenuPages.NONE && <GameEngine/>}
+      {currentPage == MenuPages.NONE && <>
+        <PermaHub/>
+        <GameEngine/>
+      </>}
     </>
   )
 }

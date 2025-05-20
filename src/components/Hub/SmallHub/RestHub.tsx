@@ -37,6 +37,8 @@ function RestHub() {
       dispatch(PlayerActions.setSpawn(restIndex));
       dispatch(PlayerActions.setDate());
       setShouldSave(true);
+      dispatch(PlayerActions.setTmpStats());
+      dispatch(PlayerActions.setFlasks(3));
     }
 
     dispatch(GamepadActions.buttonExecuted());

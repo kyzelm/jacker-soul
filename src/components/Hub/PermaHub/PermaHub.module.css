@@ -1,0 +1,13 @@
+.permaHub {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 98;
+  background: #1c1c1c;
+  color: white;
+}

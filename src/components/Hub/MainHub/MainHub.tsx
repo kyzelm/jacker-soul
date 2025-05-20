@@ -3,7 +3,6 @@ import styles from "./MainHub.module.css";
 import {useAppDispatch, useAppSelector} from "../../../store/store.ts";
 import {GamepadActions} from "../../../store/gamepadSlice.ts";
 import {HubActions} from "../../../store/hubSlice.ts";
-import {AmuletsStats, ArmorsStats, PlayerBaseStats, WeaponsStats} from "../../../utils/eq.ts";
 import {Xbox360Button, Xbox360Dpad} from "@babylonjs/core";
 import {PlayerActions} from "../../../store/playerSlice.ts";
 import {MenuActions, MenuPages} from "../../../store/menuSlice.ts";
@@ -12,6 +11,7 @@ function MainHub(): JSX.Element {
   const buttonDown = useAppSelector(state => state.gamepad.buttonsDown);
   const controls = useAppSelector(state => state.gamepad.controls);
   const playerStats = useAppSelector(state => state.player.playerStats);
+  const tmpStats = useAppSelector(state => state.player.tmpStats);
   const cursor = useAppSelector(state => state.hub.cursor);
 
   const dispatch = useAppDispatch();
@@ -57,10 +57,9 @@ function MainHub(): JSX.Element {
         <h2>{playerStats.name}</h2>
         <h3>Level: {playerStats.level}</h3>
         <h3>Runes: {playerStats.runes}</h3>
-        <h3>Health: {PlayerBaseStats[playerStats.type].health + AmuletsStats[playerStats.equipped.amulet].health + 50 * (playerStats.level - 1)}</h3>
-        <h3>Stamina: {100 + (playerStats.level - 1) * 50}</h3>
-        <h3>Defense: {PlayerBaseStats[playerStats.type].defense + ArmorsStats[playerStats.equipped.armor].defense + 5 * (playerStats.level - 1)}</h3>
-        <h3>Damage: {PlayerBaseStats[playerStats.type].damage + WeaponsStats[playerStats.equipped.weapon].damage + 10 * (playerStats.level - 1)}</h3>
+        <h3>Max Health: {tmpStats.maxHealth}</h3>
+        <h3>Defense: {tmpStats.defense}</h3>
+        <h3>Damage: {tmpStats.damage}</h3>
       </div>
       <div>
         <h2>Equipped</h2>
