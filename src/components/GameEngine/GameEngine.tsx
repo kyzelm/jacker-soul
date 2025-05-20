@@ -191,7 +191,7 @@ export default function GameEngine(): JSX.Element {
     playerHitbox.visibility = 0;
     camera.lockedTarget = playerHitbox;
 
-    const playerModel = await ImportMeshAsync( `/models/player${playerState.type === "fast" ? "L" : "H"}.glb`, scene);
+    const playerModel = await ImportMeshAsync(`/models/player${playerState.type === "fast" ? "L" : "H"}.glb`, scene);
     playerModel.meshes[0].parent = playerHitbox;
     playerModel.meshes[0].position.y = -0.95;
     playerModel.animationGroups[0].stop();
