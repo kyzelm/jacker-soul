@@ -21,6 +21,7 @@ export function MenuLoadGame({playerSaves, cursor, buttonDown}: MenuLoadGameProp
         dispatch(MenuActions.setCurrentPage(MenuPages.NONE));
       }
     }
+
     if (buttonDown === Xbox360Button.B) {
       dispatch(MenuActions.setCurrentPage(MenuPages.HOME));
     }

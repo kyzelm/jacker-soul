@@ -10,7 +10,7 @@ export interface PlayerSave {
   equipped: {
     armor: Armors,
     weapon: Weapons,
-    amulet: Amulets | null,
+    amulet: Amulets,
   }
   inventory: {
     armors: Armors[],
@@ -34,12 +34,12 @@ const initialState: PlayerSliceProps = {
     equipped: {
       armor: Armors.JACKER_ARMOR,
       weapon: Weapons.SWORD_OF_JACKER,
-      amulet: null,
+      amulet: Amulets.JACKER_AMULET,
     },
     inventory: {
-      armors: [],
-      weapons: [],
-      amulets: [],
+      armors: [Armors.JACKER_ARMOR],
+      weapons: [Weapons.SWORD_OF_JACKER],
+      amulets: [Amulets.JACKER_AMULET],
     },
     type: "fast",
     level: 1,
@@ -84,8 +84,29 @@ const playerSlice = createSlice({
         state.playerStats.inventory.amulets.push(action.payload);
       }
     },
-    levelUp: (state) => {
-      state.playerStats.level += 1;
+    equipNextWeapon: (state) => {
+      const currentIndex = state.playerStats.inventory.weapons.indexOf(state.playerStats.equipped.weapon);
+      const nextIndex = (currentIndex + 1) % state.playerStats.inventory.weapons.length;
+      state.playerStats.equipped.weapon = state.playerStats.inventory.weapons[nextIndex];
+    },
+    equipNextArmor: (state) => {
+      const currentIndex = state.playerStats.inventory.armors.indexOf(state.playerStats.equipped.armor);
+      const nextIndex = (currentIndex + 1) % state.playerStats.inventory.armors.length;
+      state.playerStats.equipped.armor = state.playerStats.inventory.armors[nextIndex];
+    },
+    equipNextAmulet: (state) => {
+      const currentIndex = state.playerStats.inventory.amulets.indexOf(state.playerStats.equipped.amulet);
+      const nextIndex = (currentIndex + 1) % state.playerStats.inventory.amulets.length;
+      state.playerStats.equipped.amulet = state.playerStats.inventory.amulets[nextIndex];
+    },
+    levelUp: (state, action: PayloadAction<number>) => {
+      state.playerStats.level += action.payload;
+    },
+    addRunes: (state, action: PayloadAction<number>) => {
+      state.playerStats.runes += action.payload;
+    },
+    removeRunes: (state, action: PayloadAction<number>) => {
+      state.playerStats.runes -= action.payload;
     },
     resetPlayerStats: (state) => {
       state.playerStats = initialState.playerStats;

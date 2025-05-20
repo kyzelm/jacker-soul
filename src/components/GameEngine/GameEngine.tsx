@@ -16,7 +16,7 @@ import {
   PointLight,
   Scene,
   ShadowGenerator,
-  Vector3
+  Vector3, Xbox360Button
 } from "@babylonjs/core";
 import "@babylonjs/loaders";
 import HavokPhysics from "@babylonjs/havok";
@@ -69,6 +69,9 @@ export default function GameEngine(): JSX.Element {
   const menuPage = useAppSelector(state => state.menu.currentPage)
   const menuPageRef = useRef(MenuPages.HOME);
 
+  const delPickItem = useAppSelector(state => state.hub.deletePickItem)
+  const isEqHub = useAppSelector(state => state.hub.isEqHub)
+
   const playerState = useAppSelector(state => state.player.playerStats);
 
   const buttonDown = useAppSelector(state => state.gamepad.buttonsDown)
@@ -91,11 +94,18 @@ export default function GameEngine(): JSX.Element {
   }
 
   useEffect(() => {
+    if (delPickItem === null) return;
+    mapRef.current!.meshes.find((mesh) => mesh.name.split("-")[0] === `Item` && parseFloat(mesh.name.split("-")[1]) === delPickItem)?.dispose();
+    dispatch(HubActions.deletePickItem(null));
+  }, [delPickItem, dispatch]);
+
+  useEffect(() => {
     menuPageRef.current = menuPage;
   }, [menuPage]);
 
   useEffect(() => {
     if (menuPageRef.current !== MenuPages.NONE) return;
+    if (isEqHub && buttonDown === Xbox360Button.Y) return;
 
     if (buttonDown === constrols.ROLL && !isAnimationPlaying()) {
       stopAnimation();
@@ -128,8 +138,12 @@ export default function GameEngine(): JSX.Element {
       playerRef.current.state = PlayerState.HEAVY_ATTACK;
     }
 
+    if (buttonDown === constrols.MENU && !isEqHub) {
+      dispatch(HubActions.openEqHub());
+    }
+
     dispatch(GamepadActions.buttonExecuted());
-  }, [buttonDown, constrols.HEAVY_ATTACK, constrols.JUMP, constrols.LIGHT_ATTACK, constrols.ROLL, constrols.RUN, dispatch, playerState.type]);
+  }, [buttonDown, constrols.HEAVY_ATTACK, constrols.JUMP, constrols.LIGHT_ATTACK, constrols.MENU, constrols.POTION, constrols.ROLL, constrols.RUN, dispatch, isEqHub, playerState.type]);
 
   useEffect(() => {
     if (menuPageRef.current !== MenuPages.NONE) return;
@@ -179,6 +193,15 @@ export default function GameEngine(): JSX.Element {
         light.intensity = 0.5;
         light.diffuse = new Color3(0, 200, 200);
         light.specular = new Color3(0, 200, 200);
+
+        shadowGenerators.push(new ShadowGenerator(1024, light));
+      }
+      if (mesh.name.startsWith("Item")) {
+        const light = new PointLight(mesh.name, Vector3.Zero(), scene);
+        light.parent = mesh;
+        light.intensity = 0.01;
+        light.diffuse = new Color3(255, 255, 255);
+        light.specular = new Color3(255, 255, 255);
 
         shadowGenerators.push(new ShadowGenerator(1024, light));
       }
@@ -261,6 +284,33 @@ export default function GameEngine(): JSX.Element {
             parameter: playerHitbox,
           }, () => {
             dispatch(HubActions.closeRestHub());
+          })
+        )
+      }
+      if (mesh.name.startsWith("Item")) {
+        const detector = MeshBuilder.CreateSphere("detector", {
+          diameter: 10,
+          segments: 4,
+        })
+        detector.parent = mesh;
+        detector.isPickable = false;
+        detector.checkCollisions = true;
+        detector.isVisible = false;
+        detector.actionManager = new ActionManager(scene);
+        detector.actionManager.registerAction(
+          new ExecuteCodeAction({
+            trigger: ActionManager.OnIntersectionEnterTrigger,
+            parameter: playerHitbox,
+          }, () => {
+            dispatch(HubActions.openPickHub(parseFloat(mesh.name.split("-")[1])));
+          })
+        )
+        detector.actionManager.registerAction(
+          new ExecuteCodeAction({
+            trigger: ActionManager.OnIntersectionExitTrigger,
+            parameter: playerHitbox,
+          }, () => {
+            dispatch(HubActions.closePickHub());
           })
         )
       }

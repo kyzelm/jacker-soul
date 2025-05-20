@@ -2,7 +2,7 @@ export enum Weapons {
   SWORD_OF_JACKER = "Sword of Jacker",
   FIST_OF_JACKER = "Fist of Jacker",
   ASY_SWORD = "Assassin's Sword",
-  ASY_DAGGER = "Assassin's Dagger",
+  ASY_FIST = "Assassin's Fist",
 }
 
 export const WeaponsStats: {
@@ -23,7 +23,7 @@ export const WeaponsStats: {
     damage: 15,
     type: "slow",
   },
-  [Weapons.ASY_DAGGER]: {
+  [Weapons.ASY_FIST]: {
     damage: 7,
     type: "fast",
   },
@@ -54,14 +54,14 @@ export enum Amulets {
 
 export const AmuletsStats: {
   [key in Amulets]: {
-    fire: number;
+    health: number;
   };
 } = {
   [Amulets.JACKER_AMULET]: {
-    fire: 10,
+    health: 20,
   },
   [Amulets.ASY_AMULET]: {
-    fire: 25,
+    health: 50,
   },
 }
 

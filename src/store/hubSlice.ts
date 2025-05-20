@@ -4,6 +4,9 @@ interface HubSliceProps {
   cursor: number;
   isRestHub: boolean;
   restIndex: number;
+  isPickHub: boolean;
+  pickHubIndex: number;
+  deletePickItem: number | null;
   isEqHub: boolean;
 }
 
@@ -11,6 +14,9 @@ const initialState: HubSliceProps = {
   cursor: 0,
   isRestHub: false,
   restIndex: 0,
+  isPickHub: false,
+  pickHubIndex: 0,
+  deletePickItem: null,
   isEqHub: false,
 }
 
@@ -39,6 +45,17 @@ const hubSlice = createSlice({
     closeRestHub: (state) => {
       state.isRestHub = false;
       state.restIndex = 0;
+    },
+    openPickHub: (state, action: PayloadAction<number>) => {
+      state.isPickHub = true;
+      state.pickHubIndex = action.payload;
+    },
+    closePickHub: (state) => {
+      state.isPickHub = false;
+      state.pickHubIndex = 0;
+    },
+    deletePickItem: (state, action: PayloadAction<number | null>) => {
+      state.deletePickItem = action.payload;
     },
     openEqHub: (state) => {
       state.isEqHub = true;

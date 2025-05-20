@@ -5,7 +5,7 @@ import {useAppDispatch} from "../../../store/store.ts";
 import {MenuActions, MenuPages} from "../../../store/menuSlice.ts";
 import {GamepadActions} from "../../../store/gamepadSlice.ts";
 import {PlayerActions} from "../../../store/playerSlice.ts";
-import {Armors, Weapons} from "../../../utils/eq.ts";
+import {Amulets, Armors, Weapons} from "../../../utils/eq.ts";
 
 const nameList: string[] = [
   "Joroh",
@@ -37,12 +37,12 @@ export default function MenuNewGame({cursor, buttonDown}: BaseMenuProps): JSX.El
           equipped: {
             weapon: cursor === 0 ? Weapons.FIST_OF_JACKER : Weapons.SWORD_OF_JACKER,
             armor: Armors.JACKER_ARMOR,
-            amulet: null
+            amulet: Amulets.JACKER_AMULET,
           },
           inventory: {
             weapons: [cursor === 0 ? Weapons.FIST_OF_JACKER : Weapons.SWORD_OF_JACKER],
             armors: [Armors.JACKER_ARMOR],
-            amulets: [],
+            amulets: [Amulets.JACKER_AMULET],
           }
         }))
         dispatch(MenuActions.setCurrentPage(MenuPages.NONE));
